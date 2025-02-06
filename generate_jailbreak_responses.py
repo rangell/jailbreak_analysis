@@ -76,10 +76,10 @@ if __name__ == '__main__':
     idx = 0
     for batch in tqdm(jailbreak_dataloader):
 
-        ## wait until we get to where we left off last time
-        #if idx <= max_shard_index:
-        #    idx += 1
-        #    continue
+        # wait until we get to where we left off last time
+        if idx <= max_shard_index:
+            idx += 1
+            continue
 
         _batch = copy.deepcopy(batch)
         _batch["jailbreak_prompt_tokenized"] = tokenizer.apply_chat_template(
