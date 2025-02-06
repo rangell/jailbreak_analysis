@@ -20,7 +20,7 @@ SBATCH_TEMPLATE = """
 singularity exec --nv\
             --overlay /scratch/rca9780/jailbreaks/overlay-15GB-500K.ext3:ro \
             /scratch/work/public/singularity/cuda12.3.2-cudnn9.0.0-ubuntu-22.04.4.sif /bin/bash \
-            -c 'source /ext3/env.sh; python -u generate_jailbreak_responses.py --target-model __model_name__ --jailbreak-dataset __jailbreak_dataset__ --output-dir __output_dir__'\
+            -c 'source /ext3/env.sh; python -u generate_jailbreak_responses.py --target-model __model_name__ --jailbreak-dataset __jailbreak_dataset__ --output-dir __output_dir__ --max-new-tokens 512'\
 """
 
 
@@ -47,7 +47,7 @@ if __name__ == "__main__":
         "qwen2.5-14b",
         "qwen2.5-32b"
     ]
-    base_output_dir = "/scratch/rca9780/llm-adaptive-attacks-data/jailbreak_responses/"
+    base_output_dir = "/scratch/rca9780/jailbreak_analysis_data/jailbreak_responses/"
     jailbreak_datasets = ["jailbreak_success"]
 
     for model_name in models:

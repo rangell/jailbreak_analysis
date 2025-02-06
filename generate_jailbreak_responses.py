@@ -38,7 +38,7 @@ if __name__ == '__main__':
 
     parser.add_argument("--target-model", default="llama3-8b", help="Name of target model (see `conversers.py` for all the available models).")
     parser.add_argument("--jailbreak-dataset", default="jailbreak_success", help="Jailbreak dataset to use.", choices=["jailbreak_success", "wildjailbreak"])
-    parser.add_argument("--max-n-tokens", type=int, default=150, help="Number of new tokens to generate.")
+    parser.add_argument("--max-new-tokens", type=int, default=150, help="Number of new tokens to generate.")
     parser.add_argument("--temperature", type=float, default=0.6, help="Temperature for generation.")
     parser.add_argument("--top-k", type=int, default=50, help="Top-K for generation.")
     parser.add_argument("--top-p", type=float, default=0.95, help="Top-p for generation.")
@@ -70,7 +70,10 @@ if __name__ == '__main__':
 
     # recover from previous run
     completed_shards = glob.glob(f"{args.output_dir}/{args.target_model}*.pkl")
-    max_shard_index = max([int(shard_fname.split("-")[-1].split(".")[0]) for shard_fname in completed_shards])
+    if len(completed_shards) > 0:
+        max_shard_index = max([int(shard_fname.split("-")[-1].split(".")[0]) for shard_fname in completed_shards])
+    else:
+        max_shard_index = -1
 
     subbatch_factor = 1
     idx = 0
@@ -82,13 +85,7 @@ if __name__ == '__main__':
             continue
 
         _batch = copy.deepcopy(batch)
-        _batch["jailbreak_prompt_tokenized"] = tokenizer.apply_chat_template(
-            _batch["jailbreak_prompt_convo"],
-            tokenize=True,
-            add_generation_prompt=True,
-            padding=True,
-            return_tensors="pt").cuda()
-        input_len = _batch["jailbreak_prompt_tokenized"].shape[1]
+        _text = tokenizer.apply_chat_template(_batch["jailbreak_prompt_convo"], tokenize=False, add_generation_prompt=True)
         batch_processed = False
         while not batch_processed:
             try:
@@ -98,17 +95,20 @@ if __name__ == '__main__':
                 for i in range(math.ceil(batch_length / subbatch_size)):
                     start_idx = i*subbatch_size
                     end_idx = min((i+1)*subbatch_size, batch_length)
+                    inputs = tokenizer(_text[start_idx:end_idx], padding=True, return_tensors="pt").to("cuda")
+                    input_len = inputs["input_ids"].shape[1]
                     output = model.generate(
-                        _batch["jailbreak_prompt_tokenized"].cuda(),
-                        max_new_tokens=args.max_n_tokens,
+                        **inputs,
+                        max_new_tokens=args.max_new_tokens,
                         eos_token_id=tokenizer.eos_token_id,
                         pad_token_id=tokenizer.pad_token_id,  # added for Mistral
                         do_sample=True,
                         temperature=args.temperature,
                         top_p=args.top_p,
                         top_k=args.top_k,
+                        return_dict_in_generate=True,
                         num_return_sequences=args.num_return_sequences)
-                    _subbatch_responses = tokenizer.batch_decode(output[:, input_len:], skip_special_tokens=True)
+                    _subbatch_responses = tokenizer.batch_decode(output.sequences[:, input_len:], skip_special_tokens=True)
                     subbatch_responses = [_subbatch_responses[j*args.num_return_sequences:(j+1)*args.num_return_sequences] for j in range(end_idx - start_idx)]
                     responses += subbatch_responses
                 _batch["responses"] = responses
