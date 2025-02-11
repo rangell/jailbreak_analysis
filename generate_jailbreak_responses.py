@@ -18,6 +18,7 @@ import torch
 from transformers import AutoTokenizer, AutoModelForCausalLM, pipeline
 from datasets import load_dataset
 from tqdm import tqdm
+import torch.nn.functional as F
 from torch.utils.data import DataLoader
 import joblib
 
@@ -30,6 +31,35 @@ def custom_collate_fn(data):
         for k, v in datum.items():
             batched_data[k].append(v)
     return batched_data
+
+
+def concatenate_with_padding(tensors, dim=0, pad_value=0):
+    """Concatenates a list of tensors with padding.
+
+    Args:
+        tensors (list of torch.Tensor): List of tensors to concatenate.
+        dim (int): Dimension to concatenate along.
+        pad_value (int): Value to use for padding.
+
+    Returns:
+        torch.Tensor: Concatenated tensor.
+    """
+    max_size = max([t.size(d) if d != dim else 0 for t in tensors for d in range(t.ndim)])
+    padded_tensors = []
+    for tensor in tensors:
+        for d in range(tensor.ndim):
+            if d == dim:
+                continue
+            pad_size = max_size - tensor.size(d)
+            if pad_size > 0:
+                pad_before = [0] * (tensor.ndim * 2)
+                pad_before[-(2 * (tensor.ndim - dim) - 1)] = pad_size
+                padded_tensor = F.pad(tensor, pad_before, mode='constant', value=pad_value)
+            else:
+                padded_tensor = tensor
+        padded_tensors.append(padded_tensor)
+
+    return torch.cat(padded_tensors, dim=dim)
 
 
 if __name__ == '__main__':
@@ -97,18 +127,38 @@ if __name__ == '__main__':
                     end_idx = min((i+1)*subbatch_size, batch_length)
                     inputs = tokenizer(_text[start_idx:end_idx], padding=True, return_tensors="pt").to("cuda")
                     input_len = inputs["input_ids"].shape[1]
-                    output = model.generate(
-                        **inputs,
-                        max_new_tokens=args.max_new_tokens,
-                        eos_token_id=tokenizer.eos_token_id,
-                        pad_token_id=tokenizer.pad_token_id,  # added for Mistral
-                        do_sample=True,
-                        temperature=args.temperature,
-                        top_p=args.top_p,
-                        top_k=args.top_k,
-                        return_dict_in_generate=True,
-                        num_return_sequences=args.num_return_sequences)
-                    _subbatch_responses = tokenizer.batch_decode(output.sequences[:, input_len:], skip_special_tokens=True)
+                    output_sequences = None
+                    if subbatch_size == 1:
+                        # For very long sequences, we might need to break up `num_return_sequences`
+                        _output_sequences = []
+                        for _ in range(args.num_return_sequences):
+                            output = model.generate(
+                                **inputs,
+                                max_new_tokens=args.max_new_tokens,
+                                eos_token_id=tokenizer.eos_token_id,
+                                pad_token_id=tokenizer.pad_token_id,  # added for Mistral
+                                do_sample=True,
+                                temperature=args.temperature,
+                                top_p=args.top_p,
+                                top_k=args.top_k,
+                                return_dict_in_generate=True,
+                                num_return_sequences=1)
+                            _output_sequences.append(output.sequences)
+                        output_sequences = concatenate_with_padding(_output_sequences, dim=0, pad_value=tokenizer.pad_token_id)
+                    else:
+                        output = model.generate(
+                            **inputs,
+                            max_new_tokens=args.max_new_tokens,
+                            eos_token_id=tokenizer.eos_token_id,
+                            pad_token_id=tokenizer.pad_token_id,  # added for Mistral
+                            do_sample=True,
+                            temperature=args.temperature,
+                            top_p=args.top_p,
+                            top_k=args.top_k,
+                            return_dict_in_generate=True,
+                            num_return_sequences=args.num_return_sequences)
+                        output_sequences = output.sequences
+                    _subbatch_responses = tokenizer.batch_decode(output_sequences[:, input_len:], skip_special_tokens=True)
                     subbatch_responses = [_subbatch_responses[j*args.num_return_sequences:(j+1)*args.num_return_sequences] for j in range(end_idx - start_idx)]
                     responses += subbatch_responses
                 _batch["responses"] = responses

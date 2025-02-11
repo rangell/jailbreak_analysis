@@ -27,33 +27,35 @@ singularity exec --nv\
 if __name__ == "__main__":
 
     models = [
-        "llama3-8b",
+        #"llama3-8b",
         "llama3-70b",
-        "llama3.1-8b",
+        #"llama3.1-8b",
         "llama3.1-70b",
-        "llama3.2-1b",
-        "llama3.2-3b",
-        "gemma-2b",
-        "gemma-7b",
-        "gemma1.1-2b",
-        "gemma1.1-7b",
-        "gemma2-2b",
-        "gemma2-9b",
+        #"llama3.2-1b",
+        #"llama3.2-3b",
+        #"gemma-2b",
+        #"gemma-7b",
+        #"gemma1.1-2b",
+        #"gemma1.1-7b",
+        #"gemma2-2b",
+        #"gemma2-9b",
         "gemma2-27b",
-        "qwen2.5-0.5b",
-        "qwen2.5-1.5b",
-        "qwen2.5-3b",
-        "qwen2.5-7b",
-        "qwen2.5-14b",
-        "qwen2.5-32b"
+        #"qwen2.5-0.5b",
+        #"qwen2.5-1.5b",
+        #"qwen2.5-3b",
+        #"qwen2.5-7b",
+        #"qwen2.5-14b",
+        #"qwen2.5-32b"
     ]
     base_output_dir = "/scratch/rca9780/jailbreak_analysis_data/jailbreak_responses/"
     jailbreak_datasets = ["jailbreak_success"]
 
     for model_name in models:
         model_size = float(model_name.split("-")[1].replace("b", ""))
-        if model_size >= 27:
+        if model_size >= 70:
             num_gpus = "4"
+        if model_size >= 27:
+            num_gpus = "2"
         else:
             num_gpus = "1"
         for jailbreak_dataset in jailbreak_datasets:
