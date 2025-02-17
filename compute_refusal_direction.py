@@ -73,7 +73,7 @@ def evaluate_refusal_direction(args, model, tokenizer, dataset, refusal_directio
 
         evaluation = evaluate_jailbreak(
             completions=[{"prompt": example["instruction"], "response": response, "category": example["category"]}],
-            evaluation_path="refusal_direction_outputs/refusal_direction_evaluation.json")
+            evaluation_path=f"refusal_direction_outputs/{args.model_name}-refusal_direction_evaluation.json")
         
         successes += evaluation["substring_matching_success_rate"]
 
