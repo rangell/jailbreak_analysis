@@ -112,7 +112,7 @@ def augment_shard_with_refusal_ablation(args, model, tokenizer, refusal_directio
     # TODO: record vector at position, project onto output space maybe quantize?
     for idx, (k, v) in enumerate(shard_dataset):
         _v = copy.deepcopy(v)
-        _v["refusal_score"] = jailbreak_scores[idx].item()
+        _v["refusal_score2"] = jailbreak_scores[idx].item()
         shard_data[k] = _v
 
     with open(shard_fname, "wb") as f:
@@ -140,15 +140,23 @@ def main(args):
     ## Grab the refusal direction
     #with open(f"{args.refusal_directions_dir}/{args.model_name}.pkl", "rb") as f:
     #    refusal_direction_dict = pickle.load(f)
-    assert args.model_name == "llama3-8b"
-    refusal_direction = torch.load("refusal_direction/pipeline/runs/meta-llama-3-8b-instruct/direction.pt").detach().cpu().to(torch.float32)
-    with open("refusal_direction/pipeline/runs/meta-llama-3-8b-instruct/direction_metadata.json", "r") as f:
-        refusal_location = json.load(f)
-    refusal_direction_dict = {
-        "best_refusal_direction": refusal_direction,
-        "best_position": refusal_location["pos"],
-        "best_layer": refusal_location["layer"]
-    }
+
+    #assert args.model_name == "llama3-8b"
+    #refusal_direction = torch.load("refusal_direction/pipeline/runs/meta-llama-3-8b-instruct/direction.pt").detach().cpu().to(torch.float32)
+    #with open("refusal_direction/pipeline/runs/meta-llama-3-8b-instruct/direction_metadata.json", "r") as f:
+    #    refusal_location = json.load(f)
+    #refusal_direction_dict = {
+    #    "best_refusal_direction": refusal_direction,
+    #    "best_position": refusal_location["pos"],
+    #    "best_layer": refusal_location["layer"]
+    #}
+
+    # from Jannik
+    with open("refusal_direction_pos_-1_layer_12.pkl", "rb") as f:
+        refusal_direction_dict = pickle.load(f)
+    refusal_direction_dict["best_layer"] = refusal_direction_dict["layer"]
+    refusal_direction_dict["best_position"] = refusal_direction_dict["position"]
+    refusal_direction_dict["best_refusal_direction"] = refusal_direction_dict["refusal_direction"]
 
     # Augment shards
     for shard_fname in tqdm(glob.glob(f"{args.responses_dir}/{args.model_name}*.pkl")):
