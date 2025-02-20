@@ -1,4 +1,5 @@
 import os
+import gc
 import torch
 from transformers import AutoModelForCausalLM, AutoTokenizer, AutoConfig
 
@@ -118,3 +119,37 @@ def judge_rule_based(gen_str):
     ]
     jailbroken = not any([prefix in gen_str for prefix in test_prefixes])
     return jailbroken
+
+
+def get_all_hidden_states(model, tokenizer, full_prompts_list):
+    # Prepare the inputs
+    inputs = tokenizer(full_prompts_list, return_tensors='pt', padding=True)
+    inputs = {k: v.to(model.device) for k, v in inputs.items()}
+    input_ids = inputs["input_ids"]
+
+    # Forward pass
+    output = model.forward(
+        **inputs,
+        eos_token_id=tokenizer.eos_token_id,
+        pad_token_id=tokenizer.pad_token_id,  # added for Mistral
+        output_scores=True,
+        return_dict_in_generate=True,
+        output_hidden_states=True,
+    )
+
+    # post-process hidden states: (batch_size, sequence_len, layer_index, hidden_dim)
+    hidden_states = torch.permute(torch.cat([torch.stack(output.hidden_states)], dim=2), (1, 2, 0, 3))
+    hidden_states = hidden_states.detach().clone().cpu().float().numpy()
+
+    # TODO: compute non-special tokens mask?
+
+    gc.collect()
+    torch.cuda.empty_cache()
+
+    return hidden_states
+
+
+def batch_generator(iterable_data, batch_size=1):
+    data_len = len(iterable_data)
+    for batch_idx in range(0, data_len, batch_size):
+        yield iterable_data[batch_idx:min(batch_idx + batch_size, data_len)]
