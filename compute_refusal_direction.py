@@ -87,52 +87,20 @@ if __name__ == '__main__':
     for prompts_batch in batch_generator(harmless_prompts, batch_size=batch_size):
         batch_hidden_states = get_all_hidden_states(model, tokenizer, prompts_batch)[:, -5:, :, :]
         harmless_hidden_states.append(batch_hidden_states)
-    from IPython import embed; embed(); exit()
     harmless_hidden_states = np.concatenate(harmless_hidden_states, axis=0)
-
-    from IPython import embed; embed(); exit()
 
     # compute harmful representations
     harmful_hidden_states = []
     for prompts_batch in batch_generator(harmful_prompts, batch_size=batch_size):
-        batch_hidden_states = get_all_hidden_states(model, tokenizer, prompts_batch)
-        from IPython import embed; embed(); exit()
-        harmful_hidden_states.append(get_all_hidden_states(model, tokenizer, prompts_batch)[:, -5:, :, :])
-
+        batch_hidden_states = get_all_hidden_states(model, tokenizer, prompts_batch)[:, -5:, :, :]
+        harmful_hidden_states.append(batch_hidden_states)
     harmful_hidden_states = np.concatenate(harmful_hidden_states, axis=0)
 
-
-    refusal_directions = {}
-    for rep_token in [-5, -4, -3, -2, -1]:
-        print("rep_token: ", rep_token)
-
-        # Compute refusal feature direction
-        #hidden_layers = list(range(-1, -(model.config.num_hidden_layers), -1))
-        #hidden_layers = list(range(1, -(model.config.num_hidden_layers)-1, -1))
-        hidden_layers = list(range(0, (model.config.num_hidden_layers)))
-        rep_reading_pipeline =  pipeline("rep-reading", model=model, tokenizer=tokenizer)
-
-        batch_size = 16
-
-        # Compute the harmless representations
-        harmless_reps = rep_reading_pipeline(harmless_prompts, rep_token=rep_token, hidden_layers=hidden_layers, batch_size=batch_size)
-        harmless_reps = reformat_reps(harmless_reps)
-
-        # Compute the harmful representations
-        harmful_reps = rep_reading_pipeline(harmful_prompts, rep_token=rep_token, hidden_layers=hidden_layers, batch_size=batch_size)
-        harmful_reps = reformat_reps(harmful_reps)
-
-        _local_refusal_directions = []
-        for layer_idx in sorted(harmless_reps.keys()):
-            _mean_harmless = np.mean(harmless_reps[layer_idx], axis=0)
-            _mean_harmful = np.mean(harmful_reps[layer_idx], axis=0)
-            _refusal_direction = _mean_harmful - _mean_harmless
-            _refusal_direction /= np.linalg.norm(_refusal_direction)
-            _local_refusal_directions.append(_refusal_direction)
-
-        refusal_directions[rep_token] = np.stack(_local_refusal_directions)
-
-        from IPython import embed; embed(); exit()
+    # compute harmless direction using difference of means
+    mean_harmless = np.mean(harmless_hidden_states, axis=0)
+    mean_harmful = np.mean(harmful_hidden_states, axis=0)
+    refusal_directions = mean_harmful - mean_harmless
+    refusal_directions /= np.linalg.norm(refusal_directions, axis=-1)[:, :, None]
 
     refusal_directions_fname = "refusal_directions.pkl"
 

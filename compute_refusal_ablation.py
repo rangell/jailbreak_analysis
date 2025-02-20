@@ -11,7 +11,7 @@ import torch.nn.functional as F
 from tqdm import tqdm
 
 from transformers import AutoTokenizer, AutoModelForCausalLM
-from utils import load_model_and_tokenizer, get_all_hidden_states
+from utils import load_model_and_tokenizer, get_all_hidden_states, batch_generator
 
 
 def augment_shard_with_refusal_ablation(args, model, tokenizer, refusal_directions, shard_fname):
@@ -22,21 +22,26 @@ def augment_shard_with_refusal_ablation(args, model, tokenizer, refusal_directio
     # Convert the data from at dictionary to a list
     shard_dataset = list(shard_data.items())
 
-    # Compute original prompt hidden states
-    original_prompts_list = [tokenizer.apply_chat_template([{"role": "user", "content": x[1]["original_prompt_text"]}], tokenize=False, add_generation_prompt=True) for x in shard_dataset]
-    original_hidden_states = get_all_hidden_states(model, tokenizer, original_prompts_list)
+    ## Compute original prompt hidden states
+    #original_prompts_list = [tokenizer.apply_chat_template([{"role": "user", "content": x[1]["original_prompt_text"]}], tokenize=False, add_generation_prompt=True) for x in shard_dataset]
+    #original_hidden_states = []
+    #for batch_prompts in batch_generator(original_prompts_list, batch_size=1):
+    #    original_hidden_states.append(get_all_hidden_states(model, tokenizer, batch_prompts)[:, -5:, :, :])
+    #original_hidden_states = np.concatenate(original_hidden_states, axis=0)
 
     # Compute jailbreak prompt hidden states
     jailbreak_prompts_list = [tokenizer.apply_chat_template(x[1]["jailbreak_prompt_convo"], tokenize=False, add_generation_prompt=True) for x in shard_dataset]
-    jailbreak_hidden_states = get_all_hidden_states(model, tokenizer, jailbreak_prompts_list)
+    jailbreak_hidden_states = []
+    for batch_prompts in batch_generator(jailbreak_prompts_list, batch_size=1):
+        jailbreak_hidden_states.append(get_all_hidden_states(model, tokenizer, batch_prompts)[:, -5:, :, :])
+    jailbreak_hidden_states = np.concatenate(jailbreak_hidden_states, axis=0)
 
-    from IPython import embed; embed(); exit()
-
-    # TODO: compute harmful direction scores
+    #harmfulness_ablation_scores = np.einsum("btld,tld->btl", original_hidden_states - jailbreak_hidden_states, refusal_directions)
+    harmfulness_ablation_scores = np.einsum("btld,tld->btl", jailbreak_hidden_states, refusal_directions)
 
     for idx, (k, v) in enumerate(shard_dataset):
         _v = copy.deepcopy(v)
-        _v["refusal_score2"] = jailbreak_scores[idx].item()
+        _v["harmfulness_ablation_scores"] = harmfulness_ablation_scores[idx]
         shard_data[k] = _v
 
     with open(shard_fname, "wb") as f:
