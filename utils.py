@@ -17,7 +17,7 @@ def load_model_and_tokenizer(model_name_or_path):
     config = AutoConfig.from_pretrained(_model_name_or_path, output_hidden_states=True, return_dict_in_generate=True)
     model = AutoModelForCausalLM.from_pretrained(
             _model_name_or_path, 
-            torch_dtype=torch.bfloat16,
+            torch_dtype=torch.float16,  # or `torch.bfloat16`
             low_cpu_mem_usage=True,
             device_map="auto",
             token=os.getenv("HF_TOKEN"),
