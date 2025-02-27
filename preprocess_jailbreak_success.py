@@ -97,5 +97,7 @@ if __name__ == "__main__":
 
         augmented_examples.append(_x)
 
+    from IPython import embed; embed(); exit()
+
     with open("data/jailbreak_success_preprocessed.pkl", "wb") as f:
         pickle.dump(augmented_examples, f)

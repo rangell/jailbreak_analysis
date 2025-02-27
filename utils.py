@@ -1,7 +1,7 @@
 import os
 import gc
 import torch
-from transformers import AutoModelForCausalLM, AutoTokenizer, AutoConfig
+from transformers import AutoModelForCausalLM, AutoTokenizer, AutoConfig, pipeline
 
 from config import KNOWN_MODEL_PATHS
 
@@ -12,12 +12,18 @@ def expand_shortcut_model_name(model_name_or_path):
     return model_name_or_path
 
 
+def get_text_generation_pipeline(model_name):
+    model, tokenizer = load_model_and_tokenizer(expand_shortcut_model_name(model_name))
+    pipe = pipeline("text-generation", model=model, tokenizer=tokenizer)
+    return pipe
+
+
 def load_model_and_tokenizer(model_name_or_path):
     _model_name_or_path = expand_shortcut_model_name(model_name_or_path)
     config = AutoConfig.from_pretrained(_model_name_or_path, output_hidden_states=True, return_dict_in_generate=True)
     model = AutoModelForCausalLM.from_pretrained(
             _model_name_or_path, 
-            torch_dtype=torch.float16,  # or `torch.bfloat16`
+            torch_dtype=torch.bfloat16,  # or `torch.float16`
             low_cpu_mem_usage=True,
             device_map="auto",
             token=os.getenv("HF_TOKEN"),
