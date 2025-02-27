@@ -6,7 +6,6 @@ import json
 from datasets import load_dataset, Dataset
 from dotenv import load_dotenv
 
-from strong_reject.load_datasets import load_strongreject
 from strong_reject.evaluate import evaluate_dataset
 
 
