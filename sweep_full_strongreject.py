@@ -59,7 +59,7 @@ if __name__ == "__main__":
             num_gpus = "1"
 
         job_name = "{}".format(model_name)
-        out_path = "{}-{}".format(base_output_dir, model_name)
+        out_path = "{}/full_evaluation-{}".format(base_output_dir, model_name)
 
         sbatch_str = SBATCH_TEMPLATE.replace("__job_name__", job_name)
         sbatch_str = sbatch_str.replace("__out_path__", out_path)
