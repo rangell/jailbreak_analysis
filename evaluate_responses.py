@@ -18,8 +18,11 @@ def main(args):
     dataset = load_dataset("json", data_files=args.responses_path)["train"]
 
     # renaming so we can use the strongreject api
-    harmful_responses = [x["model_responses"]["ablated"] for x in dataset]
+    harmful_responses = [x["ablated_response"] for x in dataset]
     dataset = dataset.add_column("response", harmful_responses)
+
+    forbidden_prompts = [x["prompt"] for x in dataset]
+    dataset = dataset.add_column("forbidden_prompt", forbidden_prompts)
 
     # evaluate the dataset
     dataset = evaluate_dataset(dataset, ["strongreject_rubric"])

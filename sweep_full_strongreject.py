@@ -52,8 +52,8 @@ if __name__ == "__main__":
     for model_name in models:
         model_size = float(model_name.split("-")[1].replace("b", ""))
         if model_size >= 70:
-            num_gpus = "4"
-        if model_size >= 27:
+            num_gpus = "3"
+        elif model_size >= 27:
             num_gpus = "2"
         else:
             num_gpus = "1"
