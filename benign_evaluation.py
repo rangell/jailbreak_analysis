@@ -140,7 +140,16 @@ def main():
     models = [get_text_generation_pipeline(args.target_model)]
     max_tokens = 384
 
-    dataset = generate_to_dataset(dataset, models, target_column="jailbroken_prompt", max_new_tokens=max_tokens, num_processes=1)
+    dataset = generate_to_dataset(
+        dataset,
+        models,
+        target_column="jailbroken_prompt",
+        max_new_tokens=max_tokens,
+        do_sample=True,
+        num_return_sequences=10,
+        temperature=0.6,
+        top_k=50,
+        top_p=0.95)
     dataset = evaluate_dataset(dataset, ["strongreject_rubric"])
     return dataset
 
