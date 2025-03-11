@@ -22,7 +22,7 @@ def compute_refusal_ablation(args, model, tokenizer, refusal_directions, evals_d
     original_hidden_states = []
     for batch_prompts in batch_generator(original_prompts_list, batch_size=1):
         original_hidden_states.append(get_all_hidden_states(model, tokenizer, batch_prompts)[:, -5:, :, :])
-    original_hidden_states = np.concatenate(original_hidden_states, axis=0)
+    original_hidden_states = torch.cat(original_hidden_states, dim=0).float()
 
     # Compute jailbreak prompt hidden states
     jailbreak_prompt_convo = evals_dataset_elt["jailbroken_prompt"]
@@ -30,12 +30,13 @@ def compute_refusal_ablation(args, model, tokenizer, refusal_directions, evals_d
     jailbreak_hidden_states = []
     for batch_prompts in batch_generator(jailbreak_prompts_list, batch_size=1):
         jailbreak_hidden_states.append(get_all_hidden_states(model, tokenizer, batch_prompts)[:, -5:, :, :])
-    jailbreak_hidden_states = np.concatenate(jailbreak_hidden_states, axis=0)
+    jailbreak_hidden_states = torch.cat(jailbreak_hidden_states, dim=0).float()
 
-    harmfulness_ablation_scores = np.einsum("btld,tld->btl", original_hidden_states - jailbreak_hidden_states, refusal_directions)
-    #harmfulness_ablation_scores = np.einsum("btld,tld->btl", jailbreak_hidden_states, refusal_directions)[0].tolist()
+    harmfulness_scores = torch.einsum("btld,tld->btl", jailbreak_hidden_states, refusal_directions)[0].cpu().numpy().tolist()
+    harmfulness_ablation_scores = torch.einsum("btld,tld->btl", original_hidden_states - jailbreak_hidden_states, refusal_directions)[0].cpu().numpy().tolist()
 
-    evals_dataset_elt["harmfulness_scores"] = harmfulness_ablation_scores
+    evals_dataset_elt["harmfulness_scores"] = harmfulness_scores
+    evals_dataset_elt["harmfulness_ablation_scores"] = harmfulness_ablation_scores
 
     gc.collect()
     torch.cuda.empty_cache()
@@ -51,15 +52,15 @@ def main(args):
     evals_dataset = load_dataset("json", data_files=args.evaluated_responses)["train"]
 
     # Grab all refusal directions
-    with open("refusal_directions.pkl", "rb") as f:
-        refusal_directions = pickle.load(f)[args.target_model]
+    with open(f"refusal_directions-{args.target_model}.pkl", "rb") as f:
+        refusal_directions = torch.from_numpy(pickle.load(f)[args.target_model]).to("cuda")
 
     scored_data = []
     for x in tqdm(evals_dataset):
         scored_data.append(compute_refusal_ablation(args, model, tokenizer, refusal_directions, x))
 
     scored_dataset = Dataset.from_pandas(pd.DataFrame(data=scored_data))
-    scored_dataset.to_json(f"{os.path.dirname(args.evaluated_responses)}/scored_{os.path.basename(args.evaluated_responses)}")
+    scored_dataset.to_json(f"{os.path.dirname(args.evaluated_responses)}/refusal_plus_{os.path.basename(args.evaluated_responses)}")
 
 
 if __name__ == "__main__":

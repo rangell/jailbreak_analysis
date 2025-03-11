@@ -87,14 +87,14 @@ if __name__ == '__main__':
     for prompts_batch in batch_generator(harmless_prompts, batch_size=batch_size):
         batch_hidden_states = get_all_hidden_states(model, tokenizer, prompts_batch)[:, -5:, :, :]
         harmless_hidden_states.append(batch_hidden_states)
-    harmless_hidden_states = np.concatenate(harmless_hidden_states, axis=0)
+    harmless_hidden_states = torch.cat(harmless_hidden_states, dim=0).cpu().float().numpy()
 
     # compute harmful representations
     harmful_hidden_states = []
     for prompts_batch in batch_generator(harmful_prompts, batch_size=batch_size):
         batch_hidden_states = get_all_hidden_states(model, tokenizer, prompts_batch)[:, -5:, :, :]
         harmful_hidden_states.append(batch_hidden_states)
-    harmful_hidden_states = np.concatenate(harmful_hidden_states, axis=0)
+    harmful_hidden_states = torch.cat(harmful_hidden_states, dim=0).cpu().float().numpy()
 
     # compute harmless direction using difference of means
     mean_harmless = np.mean(harmless_hidden_states, axis=0)
@@ -102,7 +102,7 @@ if __name__ == '__main__':
     refusal_directions = mean_harmful - mean_harmless
     refusal_directions /= np.linalg.norm(refusal_directions, axis=-1)[:, :, None]
 
-    refusal_directions_fname = "refusal_directions.pkl"
+    refusal_directions_fname = f"refusal_directions-{args.target_model}.pkl"
 
     if os.path.exists(refusal_directions_fname):
         with open(refusal_directions_fname, "rb") as f:
@@ -111,6 +111,8 @@ if __name__ == '__main__':
         meta_refusal_directions = {}
 
     meta_refusal_directions[args.target_model] = refusal_directions
+
+    from IPython import embed; embed(); exit()
 
     with open(refusal_directions_fname, "wb") as f:
         pickle.dump(meta_refusal_directions, f)

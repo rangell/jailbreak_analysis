@@ -27,25 +27,25 @@ singularity exec --nv\
 if __name__ == "__main__":
 
     models = [
-        "llama3-8b",
-        #"llama3-70b",
-        "llama3.1-8b",
-        #"llama3.1-70b",
-        "llama3.2-1b",
-        "llama3.2-3b",
-        "gemma-2b",
+        #"llama3-8b",
+        ##"llama3-70b",
+        #"llama3.1-8b",
+        ##"llama3.1-70b",
+        #"llama3.2-1b",
+        #"llama3.2-3b",
+        #"gemma-2b",
         "gemma-7b",
-        "gemma1.1-2b",
+        #"gemma1.1-2b",
         "gemma1.1-7b",
         "gemma2-2b",
         "gemma2-9b",
-        #"gemma2-27b",
-        "qwen2.5-0.5b",
-        "qwen2.5-1.5b",
-        "qwen2.5-3b",
-        "qwen2.5-7b",
-        #"qwen2.5-14b",
-        #"qwen2.5-32b"
+        "gemma2-27b",
+        #"qwen2.5-0.5b",
+        #"qwen2.5-1.5b",
+        #"qwen2.5-3b",
+        #"qwen2.5-7b",
+        ##"qwen2.5-14b",
+        ##"qwen2.5-32b"
     ]
     base_output_dir = "data/interim/"
 
@@ -53,12 +53,12 @@ if __name__ == "__main__":
         model_size = float(model_name.split("-")[1].replace("b", ""))
         if model_size >= 70:
             num_gpus = "4"
-        elif model_size >= 30:
+        elif model_size >= 27:
             num_gpus = "3"
         elif model_size >= 14:
             num_gpus = "2"
         else:
-            num_gpus = "1"
+            num_gpus = "2"
 
         job_name = "{}".format(model_name)
         out_path = "{}/full_evaluation-{}".format(base_output_dir, model_name)

@@ -67,7 +67,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
 
     parser.add_argument("--target-model", default="llama3-8b", help="Name of target model (see `conversers.py` for all the available models).")
-    parser.add_argument("--jailbreak-dataset", default="jailbreak_success", help="Jailbreak dataset to use.", choices=["jailbreak_success", "wildjailbreak"])
+    parser.add_argument("--jailbreak-dataset", default="jailbreak_success", help="JSON-formatted jailbreak dataset to use.")
     parser.add_argument("--max-new-tokens", type=int, default=150, help="Number of new tokens to generate.")
     parser.add_argument("--temperature", type=float, default=0.6, help="Temperature for generation.")
     parser.add_argument("--top-k", type=int, default=50, help="Top-K for generation.")
@@ -85,13 +85,14 @@ if __name__ == '__main__':
     # load the target model and its tokenizer
     model, tokenizer = load_model_and_tokenizer(args.target_model)
 
+    # load the jailbreak dataset
+    _jailbreaks_dataset = load_dataset("json", data_files=args.jailbreak_dataset)["train"]
+
     # do some size-based sorting for optimal generation
     prompt_key = "jailbreak_prompt_text"
-    with open(f"data/{args.jailbreak_dataset}_preprocessed.pkl", "rb") as f:
-        _jailbreak_dataset = pickle.load(f)
     sized_examples = []
-    for x in _jailbreak_dataset:
-        x[prompt_key] = tokenizer.apply_chat_template(x["jailbreak_prompt_convo"], tokenize=False, add_generation_prompt=True)
+    for x in _jailbreaks_dataset:
+        x[prompt_key] = tokenizer.apply_chat_template(x["jailbroken_prompt"], tokenize=False, add_generation_prompt=True)
         num_tokens = len(tokenizer(x[prompt_key])["input_ids"])
         sized_examples.append((num_tokens, x))
     sized_examples = sorted(sized_examples, key=lambda x : x[0])
@@ -115,13 +116,14 @@ if __name__ == '__main__':
             continue
 
         _batch = copy.deepcopy(batch)
-        _text = tokenizer.apply_chat_template(_batch["jailbreak_prompt_convo"], tokenize=False, add_generation_prompt=True)
+        _text = tokenizer.apply_chat_template(_batch["jailbroken_prompt"], tokenize=False, add_generation_prompt=True)
+
         batch_processed = False
         while not batch_processed:
             try:
                 responses = []
                 subbatch_size = args.batch_size // subbatch_factor
-                batch_length = len(batch["prompt_name"])
+                batch_length = len(batch["jailbreak"])
                 for i in range(math.ceil(batch_length / subbatch_size)):
                     start_idx = i*subbatch_size
                     end_idx = min((i+1)*subbatch_size, batch_length)

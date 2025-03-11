@@ -148,9 +148,7 @@ def get_all_hidden_states(model, tokenizer, full_prompts_list):
 
     # post-process hidden states: (batch_size, sequence_len, layer_index, hidden_dim)
     hidden_states = torch.permute(torch.cat([torch.stack(output.hidden_states)], dim=2), (1, 2, 0, 3))
-    hidden_states = hidden_states.detach().clone().cpu().float().numpy()
-
-    # TODO: compute non-special tokens mask?
+    hidden_states = hidden_states.detach()
 
     return hidden_states
 
