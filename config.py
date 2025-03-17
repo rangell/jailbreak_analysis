@@ -5,6 +5,7 @@ KNOWN_MODEL_PATHS = {
     "llama3.1-70b": "meta-llama/Llama-3.1-70B-Instruct",
     "llama3.2-1b": "meta-llama/Llama-3.2-1B-Instruct",
     "llama3.2-3b": "meta-llama/Llama-3.2-3B-Instruct",
+    "llama3.3-70b": "meta-llama/Llama-3.3-70B-Instruct",
     "gemma-2b": "google/gemma-2b-it",
     "gemma-7b": "google/gemma-7b-it",
     "gemma1.1-2b": "google/gemma-1.1-2b-it",

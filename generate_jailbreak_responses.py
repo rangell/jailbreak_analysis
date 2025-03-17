@@ -73,7 +73,7 @@ if __name__ == '__main__':
     parser.add_argument("--top-k", type=int, default=50, help="Top-K for generation.")
     parser.add_argument("--top-p", type=float, default=0.95, help="Top-p for generation.")
     parser.add_argument("--num-return-sequences", type=int, default=10, help="Number of sequences to sample from the model.")
-    parser.add_argument("--batch-size", type=int, default=16, help="Max batch size for generation.")
+    parser.add_argument("--batch-size", type=int, default=64, help="Max batch size for generation.")
     parser.add_argument("--output-dir", help="Path to output directory.", required=True)
     args = parser.parse_args()
 
@@ -100,7 +100,7 @@ if __name__ == '__main__':
     jailbreak_dataloader = DataLoader(jailbreak_dataset, batch_size=args.batch_size, shuffle=False, collate_fn=custom_collate_fn)
 
     # recover from previous run
-    completed_shards = glob.glob(f"{args.output_dir}/{args.target_model}*.pkl")
+    completed_shards = glob.glob(f"{args.output_dir}/{args.target_model}*.json")
     if len(completed_shards) > 0:
         max_shard_index = max([int(shard_fname.split("-")[-1].split(".")[0]) for shard_fname in completed_shards])
     else:
@@ -163,7 +163,7 @@ if __name__ == '__main__':
                     _subbatch_responses = tokenizer.batch_decode(output_sequences[:, input_len:], skip_special_tokens=True)
                     subbatch_responses = [_subbatch_responses[j*args.num_return_sequences:(j+1)*args.num_return_sequences] for j in range(end_idx - start_idx)]
                     responses += subbatch_responses
-                _batch["responses"] = responses
+                _batch["response"] = responses
                 batch_processed = True
             except torch.OutOfMemoryError as e: 
                 gc.collect()
@@ -172,21 +172,11 @@ if __name__ == '__main__':
                     raise ValueError("Subbatch size is already 1!!!")
                 subbatch_factor *= 2
                 print("new subbatch factor: ", subbatch_factor)
-        _batch['jailbroken_rule_judge'] = [[judge_rule_based(resp) for resp in responses] for responses in _batch['responses']]
+        _batch['jailbroken_rule_judge'] = [[judge_rule_based(resp) for resp in responses] for responses in _batch['response']]
 
-        prompt_responses = {}
-        for i in range(len(_batch["prompt_name"])):
-            example_dict = {}
-            for key in _batch.keys():
-                example_dict[key] = _batch[key][i]
-            prompt_responses[(_batch["jailbreak_prompt_name"][i], _batch["original_prompt_text"][i])] = example_dict
-
-        del _batch
-
-        latest_pickle_fname = f'{args.output_dir}/{args.target_model}-responses-{idx}.pkl'
-        with open(latest_pickle_fname, 'wb') as f:
-            pickle.dump(prompt_responses, f, protocol=5)
-
-        del prompt_responses
+        latest_shard_fname = f'{args.output_dir}/{args.target_model}-responses-{idx}.json'
+        with open(latest_shard_fname, 'w') as f:
+            for i in range(args.batch_size):
+                f.write(json.dumps({k : v[i] for k, v in _batch.items()}) + "\n")
 
         idx += 1

@@ -20,7 +20,7 @@ SBATCH_TEMPLATE = """
 singularity exec --nv\
             --overlay /scratch/rca9780/jailbreaks/overlay-15GB-500K.ext3:ro \
             /scratch/work/public/singularity/cuda12.3.2-cudnn9.0.0-ubuntu-22.04.4.sif /bin/bash \
-            -c 'source /ext3/env.sh; python -u generate_jailbreak_responses.py --target-model __model_name__ --jailbreak-dataset data/interim/jailbreaks.json --output-dir __output_dir__ --max-new-tokens 512'\
+            -c 'source /ext3/env.sh; python -u generate_jailbreak_responses.py --target-model __model_name__ --jailbreak-dataset data/interim/jailbreaks.json --output-dir __output_dir__ --max-new-tokens 384'\
 """
 
 
@@ -33,6 +33,7 @@ if __name__ == "__main__":
         "llama3.1-70b",
         "llama3.2-1b",
         "llama3.2-3b",
+        "llama3.3-70b",
         "gemma-2b",
         "gemma-7b",
         "gemma1.1-2b",
@@ -53,7 +54,7 @@ if __name__ == "__main__":
         model_size = float(model_name.split("-")[1].replace("b", ""))
         if model_size >= 70:
             num_gpus = "4"
-        if model_size >= 27:
+        elif model_size >= 27:
             num_gpus = "2"
         else:
             num_gpus = "1"
