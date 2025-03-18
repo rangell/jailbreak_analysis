@@ -10,14 +10,12 @@ from strong_reject.evaluate import evaluate_dataset
 
 
 parser = argparse.ArgumentParser()
-parser.add_argument("--responses_path", required=True, help="path to JSON-formatted responses.")
+parser.add_argument("--responses-path", required=True, help="path to JSON-formatted responses.")
 
 
 def main(args):
     # load the dataset
     dataset = load_dataset("json", data_files=args.responses_path)["train"]
-
-    from IPython import embed; embed(); exit()
 
     # renaming so we can use the strongreject api
     harmful_responses = [x["ablated_responses"] for x in dataset]
