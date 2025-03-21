@@ -32,11 +32,19 @@ def compute_refusal_ablation(args, model, tokenizer, refusal_directions, evals_d
         jailbreak_hidden_states.append(get_all_hidden_states(model, tokenizer, batch_prompts)[:, -5:, :, :])
     jailbreak_hidden_states = torch.cat(jailbreak_hidden_states, dim=0).float()
 
+    normd_original_hidden_states = F.normalize(original_hidden_states, dim=-1)
+    normd_jailbreak_hidden_states = F.normalize(jailbreak_hidden_states, dim=-1)
+
     harmfulness_scores = torch.einsum("btld,tld->btl", jailbreak_hidden_states, refusal_directions)[0].cpu().numpy().tolist()
     harmfulness_ablation_scores = torch.einsum("btld,tld->btl", original_hidden_states - jailbreak_hidden_states, refusal_directions)[0].cpu().numpy().tolist()
 
+    normd_harmfulness_scores = torch.einsum("btld,tld->btl", normd_jailbreak_hidden_states, refusal_directions)[0].cpu().numpy().tolist()
+    normd_harmfulness_ablation_scores = torch.einsum("btld,tld->btl", normd_original_hidden_states - normd_jailbreak_hidden_states, refusal_directions)[0].cpu().numpy().tolist()
+
     evals_dataset_elt["harmfulness_scores"] = harmfulness_scores
     evals_dataset_elt["harmfulness_ablation_scores"] = harmfulness_ablation_scores
+    evals_dataset_elt["normd_harmfulness_scores"] = normd_harmfulness_scores
+    evals_dataset_elt["normd_harmfulness_ablation_scores"] = normd_harmfulness_ablation_scores
 
     gc.collect()
     torch.cuda.empty_cache()

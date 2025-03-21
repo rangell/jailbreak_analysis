@@ -13,7 +13,7 @@ SBATCH_TEMPLATE = """
 #SBATCH -e __out_path__.err
 #
 #SBATCH --cpus-per-task=8
-#SBATCH --gres=gpu:a100:__num_gpus__
+#SBATCH --gres=gpu:rtx8000:__num_gpus__
 #SBATCH --mem=64G
 #SBATCH --time=0-06:00:00
 

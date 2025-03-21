@@ -76,6 +76,8 @@ if __name__ == '__main__':
 
     # get the reps
     hidden_layers = list(range(-1, -model.config.num_hidden_layers, -1))
+    hidden_layers = [hidden_layers[int(p * len(hidden_layers))] for p in [0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9]]
+
     rep_token = -1
     reps = rep_reading_pipeline(full_prompts, rep_token=rep_token, hidden_layers=hidden_layers, batch_size=args.batch_size)
     reps = reformat_reps(reps)
@@ -92,5 +94,5 @@ if __name__ == '__main__':
         "hidden_layers": hidden_layers,
     }   
 
-    with open(f'{args.output_dir}/{args.target_model}-{args.dataset_name.split("/")[1]}-knn_graph-{args.num_samples}-{args.k}.pkl', 'wb') as f:
+    with open(f'{args.output_dir}/{args.target_model}-{args.dataset_name.split("/")[1]}-knn_graph-{args.num_samples}-{args.k}-new.pkl', 'wb') as f:
         pickle.dump(knn_graph_data, f)

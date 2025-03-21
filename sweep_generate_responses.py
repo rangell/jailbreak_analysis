@@ -28,9 +28,9 @@ if __name__ == "__main__":
 
     models = [
         #"llama3-8b",
-        "llama3-70b",
+        #"llama3-70b",
         #"llama3.1-8b",
-        "llama3.1-70b",
+        #"llama3.1-70b",
         #"llama3.2-1b",
         #"llama3.2-3b",
         #"llama3.3-70b",
@@ -40,13 +40,13 @@ if __name__ == "__main__":
         #"gemma1.1-7b",
         #"gemma2-2b",
         #"gemma2-9b",
-        "gemma2-27b",
+        #"gemma2-27b",
         #"qwen2.5-0.5b",
         #"qwen2.5-1.5b",
         #"qwen2.5-3b",
         #"qwen2.5-7b",
         #"qwen2.5-14b",
-        #"qwen2.5-32b"
+        "qwen2.5-32b"
     ]
     base_output_dir = "/scratch/rca9780/jailbreak_analysis_data/response_shards/"
 
