@@ -20,9 +20,9 @@ def get_text_generation_pipeline(model_name):
 
 def load_model_and_tokenizer(model_name_or_path):
     _model_name_or_path = expand_shortcut_model_name(model_name_or_path)
-    config = AutoConfig.from_pretrained(_model_name_or_path, output_hidden_states=True, return_dict_in_generate=True)
+    config = AutoConfig.from_pretrained(_model_name_or_path[1] if isinstance(_model_name_or_path, tuple) else _model_name_or_path, output_hidden_states=True, return_dict_in_generate=True)
     model = AutoModelForCausalLM.from_pretrained(
-            _model_name_or_path, 
+            _model_name_or_path[0] if isinstance(_model_name_or_path, tuple) else _model_name_or_path, 
             torch_dtype=torch.bfloat16,  # or `torch.float16`
             low_cpu_mem_usage=True,
             device_map="auto",
@@ -31,11 +31,12 @@ def load_model_and_tokenizer(model_name_or_path):
             trust_remote_code=True).eval()
 
     tokenizer = AutoTokenizer.from_pretrained(
-        _model_name_or_path,
+        _model_name_or_path[1] if isinstance(_model_name_or_path, tuple) else _model_name_or_path,
         use_fast=False,
         token=os.getenv("HF_TOKEN"),
         padding_side="left"
     )
+
     if tokenizer.pad_token is None:
         tokenizer.pad_token = tokenizer.eos_token
 

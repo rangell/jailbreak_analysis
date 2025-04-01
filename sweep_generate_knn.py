@@ -15,7 +15,7 @@ SBATCH_TEMPLATE = """
 #SBATCH --cpus-per-task=4
 #SBATCH --gres=gpu:a100:__num_gpus__
 #SBATCH --mem=64G
-#SBATCH --time=0-24:00:00
+#SBATCH --time=0-4:00:00
 
 singularity exec --nv\
             --overlay /scratch/rca9780/jailbreaks/overlay-15GB-500K.ext3:ro \
@@ -27,25 +27,26 @@ singularity exec --nv\
 if __name__ == "__main__":
 
     models = [
-        "llama3-70b",
-        "llama3.1-70b",
-        #"llama3-8b",
-        #"llama3.1-8b",
-        #"llama3.2-1b",
-        #"llama3.2-3b",
-        #"gemma-2b",
-        #"gemma-7b",
-        #"gemma1.1-2b",
-        #"gemma1.1-7b",
-        #"gemma2-2b",
-        #"gemma2-9b",
-        #"gemma2-27b",
-        #"qwen2.5-0.5b",
-        #"qwen2.5-1.5b",
-        #"qwen2.5-3b",
-        #"qwen2.5-7b",
-        #"qwen2.5-14b",
-        #"qwen2.5-32b"
+        #"llama3-70b",
+        #"llama3.1-70b",
+        "llama3-8b",
+        "llama3.1-8b",
+        "llama3.2-1b",
+        "llama3.2-3b",
+        #"llama3.3-70b",
+        "gemma-2b",
+        "gemma-7b",
+        "gemma1.1-2b",
+        "gemma1.1-7b",
+        "gemma2-2b",
+        "gemma2-9b",
+        "gemma2-27b",
+        "qwen2.5-0.5b",
+        "qwen2.5-1.5b",
+        "qwen2.5-3b",
+        "qwen2.5-7b",
+        "qwen2.5-14b",
+        "qwen2.5-32b"
     ]
 
     output_dir = "/scratch/rca9780/jailbreak_analysis_data/knn_graphs/"
@@ -54,7 +55,7 @@ if __name__ == "__main__":
 
         model_size = float(model_name.split("-")[1].replace("b", ""))
         if model_size >= 70:
-            num_gpus = "4"
+            num_gpus = "3"
         elif model_size >= 27:
             num_gpus = "2"
         else:

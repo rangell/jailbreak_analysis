@@ -15,12 +15,12 @@ SBATCH_TEMPLATE = """
 #SBATCH --cpus-per-task=8
 #SBATCH --gres=gpu:a100:__num_gpus__
 #SBATCH --mem=64G
-#SBATCH --time=0-18:00:00
+#SBATCH --time=0-3:00:00
 
 singularity exec --nv\
             --overlay /scratch/rca9780/jailbreaks/overlay-15GB-500K.ext3:ro \
             /scratch/work/public/singularity/cuda12.3.2-cudnn9.0.0-ubuntu-22.04.4.sif /bin/bash \
-            -c 'source /ext3/env.sh; python -u generate_jailbreak_responses.py --target-model __model_name__ --jailbreak-dataset data/interim/jailbreaks.json --output-dir __output_dir__ --max-new-tokens 384'\
+            -c 'source /ext3/env.sh; python -u generate_jailbreak_responses.py --target-model __model_name__ --jailbreak-dataset data/interim/jailbreaks_benign.json --output-dir __output_dir__ --max-new-tokens 384'\
 """
 
 
@@ -60,7 +60,7 @@ if __name__ == "__main__":
         "outputs_qwen2.5-3b_from_gemma2-7b--checkpoint-40",
         "outputs_qwen2.5-3b_from_gemma2-7b--checkpoint-400",
     ]
-    base_output_dir = "/scratch/rca9780/jailbreak_analysis_data/response_shards/"
+    base_output_dir = "/scratch/rca9780/jailbreak_analysis_data/benign_response_shards/"
 
     for model_name in models:
         if "outputs" in model_name:

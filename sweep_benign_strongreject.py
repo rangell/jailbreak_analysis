@@ -15,35 +15,37 @@ SBATCH_TEMPLATE = """
 #SBATCH --cpus-per-task=8
 #SBATCH --gres=gpu:a100:__num_gpus__
 #SBATCH --mem=64G
-#SBATCH --time=0-6:00:00
+#SBATCH --time=0-18:00:00
 
 singularity exec --nv\
             --overlay /scratch/rca9780/jailbreaks/overlay-15GB-500K.ext3:ro \
             /scratch/work/public/singularity/cuda12.3.2-cudnn9.0.0-ubuntu-22.04.4.sif /bin/bash \
-            -c 'source /ext3/env.sh; python -u benign_evaluation.py --target-model __model_name__'\
+            -c 'source /ext3/env.sh; export PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True; python -u benign_evaluation.py --target-model __model_name__'\
 """
 
 
 if __name__ == "__main__":
 
     models = [
-        "llama3-8b",
+        #"llama3-8b",
         #"llama3-70b",
-        "llama3.1-8b",
+        #"llama3.1-8b",
         #"llama3.1-70b",
-        "llama3.2-1b",
-        "llama3.2-3b",
-        "gemma-2b",
+        #"llama3.2-1b",
+        #"llama3.2-3b",
+        #"llama3.3-70b",
+        #"llama3.2-1b",
+        #"gemma-2b",
         #"gemma-7b",
-        "gemma1.1-2b",
+        #"gemma1.1-2b",
         #"gemma1.1-7b",
         #"gemma2-2b",
-        #"gemma2-9b",
+        "gemma2-9b",
         #"gemma2-27b",
-        "qwen2.5-0.5b",
-        "qwen2.5-1.5b",
-        "qwen2.5-3b",
-        "qwen2.5-7b",
+        #"qwen2.5-0.5b",
+        #"qwen2.5-1.5b",
+        #"qwen2.5-3b",
+        #"qwen2.5-7b",
         #"qwen2.5-14b",
         #"qwen2.5-32b"
     ]
@@ -55,7 +57,7 @@ if __name__ == "__main__":
             num_gpus = "4"
         elif model_size >= 27:
             num_gpus = "3"
-        elif model_size >= 14:
+        elif model_size >= 9:
             num_gpus = "2"
         else:
             num_gpus = "1"

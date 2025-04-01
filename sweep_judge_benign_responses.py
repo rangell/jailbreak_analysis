@@ -14,7 +14,7 @@ SBATCH_TEMPLATE = """
 #
 #SBATCH --cpus-per-task=8
 #SBATCH --mem=16G
-#SBATCH --time=0-8:00:00
+#SBATCH --time=0-4:00:00
 
 singularity exec --nv\
             --overlay /scratch/rca9780/jailbreaks/overlay-15GB-500K.ext3:ro \
@@ -27,7 +27,7 @@ if __name__ == "__main__":
 
     models = [
         #"llama3-8b",
-        #"llama3-70b",
+        "llama3-70b",
         #"llama3.1-8b",
         #"llama3.1-70b",
         #"llama3.2-1b",
@@ -45,11 +45,11 @@ if __name__ == "__main__":
         #"qwen2.5-3b",
         #"qwen2.5-7b",
         #"qwen2.5-14b",
-        #"qwen2.5-32b"
-        "outputs_llama-3.2-3B_from_qwen_2.5-7b--checkpoint-40",
+        #"qwen2.5-32b",
+        #"outputs_llama-3.2-3B_from_qwen_2.5-7b--checkpoint-40",
         #"outputs_llama-3.2-3B_from_qwen_2.5-7b--checkpoint-400",
     ]
-    responses_dir = "/scratch/rca9780/jailbreak_analysis_data/response_shards"
+    responses_dir = "/scratch/rca9780/jailbreak_analysis_data/benign_response_shards/"
 
     for model_name in models:
         job_name = "{}".format("j-" + model_name)

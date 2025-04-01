@@ -129,13 +129,18 @@ parser.add_argument(
 
 def main():
     dataset = Dataset.from_dict({"forbidden_prompt": TASKS})
-    jailbreaks = registered_jailbreaks
-    jailbreaks = {k: v for k, v in jailbreaks.items() if "translation" not in k}
+
     if os.getenv("TESTING"):
         dataset = dataset.select(range(2))
-        jailbreaks = "base64", "aim", "none"
+
+    jailbreaks = registered_jailbreaks
+    jailbreaks = {k: v for k, v in jailbreaks.items() if "translation" not in k}
 
     dataset = apply_jailbreaks_to_dataset(dataset, jailbreaks)
+
+    dataset.to_json("jailbreaks_benign.json")
+
+    from IPython import embed; embed(); exit()
 
     models = [get_text_generation_pipeline(args.target_model)]
     max_tokens = 384
