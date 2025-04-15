@@ -2,6 +2,7 @@ import os
 import gc
 import torch
 from transformers import AutoModelForCausalLM, AutoTokenizer, AutoConfig, pipeline
+from transformers.models.qwen2.configuration_qwen2 import Qwen2Config
 
 from config import KNOWN_MODEL_PATHS
 
@@ -21,6 +22,11 @@ def get_text_generation_pipeline(model_name):
 def load_model_and_tokenizer(model_name_or_path):
     _model_name_or_path = expand_shortcut_model_name(model_name_or_path)
     config = AutoConfig.from_pretrained(_model_name_or_path[1] if isinstance(_model_name_or_path, tuple) else _model_name_or_path, output_hidden_states=True, return_dict_in_generate=True)
+
+    # Fix for vocab size issue
+    if isinstance(config, Qwen2Config):
+        config = None
+
     model = AutoModelForCausalLM.from_pretrained(
             _model_name_or_path[0] if isinstance(_model_name_or_path, tuple) else _model_name_or_path, 
             torch_dtype=torch.bfloat16,  # or `torch.float16`
