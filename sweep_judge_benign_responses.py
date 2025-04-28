@@ -27,7 +27,7 @@ if __name__ == "__main__":
 
     models = [
         #"llama3-8b",
-        "llama3-70b",
+        #"llama3-70b",
         #"llama3.1-8b",
         #"llama3.1-70b",
         #"llama3.2-1b",
@@ -48,6 +48,12 @@ if __name__ == "__main__":
         #"qwen2.5-32b",
         #"outputs_llama-3.2-3B_from_qwen_2.5-7b--checkpoint-40",
         #"outputs_llama-3.2-3B_from_qwen_2.5-7b--checkpoint-400",
+        "outputs_gemma2-2b_from_llama3-8b--checkpoint-40",
+        "outputs_gemma2-2b_from_llama3-8b--checkpoint-400",
+        "outputs_gemma2-2b_from_qwen2.5-7b--checkpoint-40",
+        "outputs_gemma2-2b_from_qwen2.5-7b--checkpoint-400",
+        "outputs_llama3.2-3b_from_gemma2-7b--checkpoint-40",
+        "outputs_llama3.2-3b_from_gemma2-7b--checkpoint-400",
     ]
     responses_dir = "/scratch/rca9780/jailbreak_analysis_data/benign_response_shards/"
 

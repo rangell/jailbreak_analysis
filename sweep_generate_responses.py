@@ -14,8 +14,8 @@ SBATCH_TEMPLATE = """
 #
 #SBATCH --cpus-per-task=8
 #SBATCH --gres=gpu:a100:__num_gpus__
-#SBATCH --mem=64G
-#SBATCH --time=0-18:00:00
+#SBATCH --mem=32G
+#SBATCH --time=0-4:00:00
 
 singularity exec --nv\
             --overlay /scratch/rca9780/jailbreaks/overlay-15GB-500K.ext3:ro \
@@ -49,21 +49,33 @@ if __name__ == "__main__":
         #"qwen2.5-32b"
         #"outputs_llama-3.2-3B_from_qwen_2.5-7b--checkpoint-40",
         #"outputs_llama-3.2-3B_from_qwen_2.5-7b--checkpoint-400",
-        "outputs_gemma2-2b_from_llama3-8b--checkpoint-40",
-        "outputs_gemma2-2b_from_llama3-8b--checkpoint-400",
-        "outputs_gemma2-2b_from_qwen2.5-7b--checkpoint-40",
-        "outputs_gemma2-2b_from_qwen2.5-7b--checkpoint-400",
-        "outputs_llama3.2-3b_from_gemma2-7b--checkpoint-40",
-        "outputs_llama3.2-3b_from_gemma2-7b--checkpoint-400",
-        "outputs_llama3.2-3B_from_llama3-8b--checkpoint-40",
-        "outputs_llama3.2-3B_from_llama3-8b--checkpoint-400",
-        "outputs_qwen2.5-3b_from_gemma2-7b--checkpoint-40",
-        "outputs_qwen2.5-3b_from_gemma2-7b--checkpoint-400",
+        #"outputs_gemma2-2b_from_llama3-8b--checkpoint-40",
+        #"outputs_gemma2-2b_from_llama3-8b--checkpoint-400",
+        #"outputs_gemma2-2b_from_qwen2.5-7b--checkpoint-40",
+        #"outputs_gemma2-2b_from_qwen2.5-7b--checkpoint-400",
+        #"outputs_llama3.2-3b_from_gemma2-7b--checkpoint-40",
+        #"outputs_llama3.2-3b_from_gemma2-7b--checkpoint-400",
+        #"outputs_llama3.2-3B_from_llama3-8b--checkpoint-40",
+        #"outputs_llama3.2-3B_from_llama3-8b--checkpoint-400",
+        #"outputs_qwen2.5-3b_from_gemma2-7b--checkpoint-40",
+        #"outputs_qwen2.5-3b_from_gemma2-7b--checkpoint-400",
+        #"gemma2-2b_from_llama3-8b--checkpoint-40",
+        #"gemma2-2b_from_llama3-8b--checkpoint-320",
+        #"gemma2-2b_from_qwen2.5-7b--checkpoint-40",
+        #"gemma2-2b_from_qwen2.5-7b--checkpoint-320",
+        #"llama3.2-3b_from_gemma-7b--checkpoint-40",
+        #"llama3.2-3b_from_gemma-7b--checkpoint-320",
+        #"llama3.2-3b_from_qwen2.5-7b--checkpoint-40",
+        #"llama3.2-3b_from_qwen2.5-7b--checkpoint-320",
+        #"qwen2.5-3b_from_gemma-7b--checkpoint-40",
+        #"qwen2.5-3b_from_gemma-7b--checkpoint-320",
+        "qwen2.5-3b_from_llama3-8b--checkpoint-40",
+        "qwen2.5-3b_from_llama3-8b--checkpoint-320",
     ]
     base_output_dir = "/scratch/rca9780/jailbreak_analysis_data/response_shards/"
 
     for model_name in models:
-        if "outputs" in model_name:
+        if "from" in model_name:
             num_gpus = "1"
         else:
             model_size = float(model_name.split("-")[1].replace("b", ""))

@@ -32,20 +32,25 @@ if __name__ == "__main__":
 
     shard_filenames = glob.glob(f"{args.shard_dir}/{args.target_model}*.json")
 
-    # rangell: HACK
+    ## rangell: HACK
+    #if "benign" in args.shard_dir:
+    #    args.target_model = f"benign-{args.target_model}"
     if "benign" in args.shard_dir:
-        args.target_model = f"benign-{args.target_model}"
+        raise ValueError()
 
-    with open(f"{DATA_DIR}/all_responses-{args.target_model}.json", "w") as outfile:
+    #with open(f"{DATA_DIR}/all_responses-{args.target_model}.json", "w") as outfile:
+    with open(f"{args.shard_dir}/all_responses-{args.target_model}.json", "w") as outfile:
         for fname in shard_filenames:
             with open(fname) as infile:
                 for line in infile:
                     outfile.write(line)
 
-    dataset = load_dataset("json", data_files=f"{DATA_DIR}/all_responses-{args.target_model}.json")["train"]
+    #dataset = load_dataset("json", data_files=f"{DATA_DIR}/all_responses-{args.target_model}.json")["train"]
+    dataset = load_dataset("json", data_files=f"{args.shard_dir}/all_responses-{args.target_model}.json")["train"]
 
     dataset = decode_dataset(dataset)
 
     dataset = evaluate_dataset(dataset, ["strongreject_rubric"])
 
-    dataset.to_json(f"{DATA_DIR}/eval_all_responses-{args.target_model}.json")
+    #dataset.to_json(f"{DATA_DIR}/eval_all_responses-{args.target_model}.json")
+    dataset.to_json(f"{args.shard_dir}/eval_all_responses-{args.target_model}.json")
