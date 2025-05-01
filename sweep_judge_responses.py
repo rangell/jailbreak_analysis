@@ -14,7 +14,7 @@ SBATCH_TEMPLATE = """
 #
 #SBATCH --cpus-per-task=8
 #SBATCH --mem=16G
-#SBATCH --time=0-00:15:00
+#SBATCH --time=0-06:00:00
 
 singularity exec --nv\
             --overlay /scratch/rca9780/jailbreaks/overlay-15GB-500K.ext3:ro \
@@ -63,20 +63,23 @@ if __name__ == "__main__":
         ##"gemma2-2b_from_qwen2.5-7b--checkpoint-40",
         ##"gemma2-2b_from_qwen2.5-7b--checkpoint-320",
         #"llama3.2-3b_from_gemma-7b--checkpoint-40",
-        "llama3.2-3b_from_gemma-7b--checkpoint-320",
+        #"llama3.2-3b_from_gemma-7b--checkpoint-320",
         ##"llama3.2-3b_from_qwen2.5-7b--checkpoint-40",
         ##"llama3.2-3b_from_qwen2.5-7b--checkpoint-320",
-        ##"qwen2.5-3b_from_gemma-7b--checkpoint-40",
-        ##"qwen2.5-3b_from_gemma-7b--checkpoint-320",
+        #"qwen2.5-3b_from_gemma-7b--checkpoint-40",
+        "qwen2.5-3b_from_gemma-7b--checkpoint-320",
         ##"qwen2.5-3b_from_llama3-8b--checkpoint-40",
         ##"qwen2.5-3b_from_llama3-8b--checkpoint-320",
+        #"gemma2-27b_from_claude-3-haiku--checkpoint-40",
     ]
     responses_dir = "/scratch/rca9780/jailbreak_analysis_data/response_shards"
 
     # Uncomment for active attacks
-    #responses_dir += "/PGD-meta-llama--Llama-3.2-3B-Instruct/"
-    #responses_dir += "/PGD-scratch--jb9146--git--stanford_alpaca--outputs--distillations--llama3.2-3b_from_gemma-7b--checkpoint-40-----meta-llama--Llama-3.2-3B-Instruct/"
-    responses_dir += "/PGD-scratch--jb9146--git--stanford_alpaca--outputs--distillations--llama3.2-3b_from_gemma-7b--checkpoint-320-----meta-llama--Llama-3.2-3B-Instruct/"
+    #responses_dir += "/GCG-meta-llama--Llama-3.2-3B-Instruct/"
+    #responses_dir += "/GCG-scratch--jb9146--git--stanford_alpaca--outputs--distillations--llama3.2-3b_from_gemma-7b--checkpoint-40-----meta-llama--Llama-3.2-3B-Instruct/"
+    #responses_dir += "/GCG-scratch--jb9146--git--stanford_alpaca--outputs--distillations--llama3.2-3b_from_gemma-7b--checkpoint-320-----meta-llama--Llama-3.2-3B-Instruct/"
+    responses_dir += "/GCG-scratch--jb9146--git--stanford_alpaca--outputs--distillations--qwen2.5-3b_from_gemma-7b--checkpoint-40-----Qwen--Qwen2.5-3B-Instruct/"
+    #responses_dir += "/GCG-scratch--jb9146--git--stanford_alpaca--outputs--distillations--qwen2.5-3b_from_gemma-7b--checkpoint-320-----Qwen--Qwen2.5-3B-Instruct/"
 
     for model_name in models:
         job_name = "{}".format("j-" + model_name)

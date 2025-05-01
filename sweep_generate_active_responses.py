@@ -13,7 +13,7 @@ SBATCH_TEMPLATE = """
 #SBATCH -e __out_path__.err
 #
 #SBATCH --cpus-per-task=8
-#SBATCH --gres=gpu:h100:__num_gpus__
+#SBATCH --gres=gpu:a100:__num_gpus__
 #SBATCH --mem=16G
 #SBATCH --time=0-0:15:00
 
@@ -27,15 +27,15 @@ singularity exec --nv\
 if __name__ == "__main__":
 
     models = [
-        ##"llama3-8b",
+        "llama3-8b",
         ##"llama3-70b",
-        ##"llama3.1-8b",
+        "llama3.1-8b",
         ##"llama3.1-70b",
-        ##"llama3.2-1b",
+        "llama3.2-1b",
         #"llama3.2-3b",
         ##"llama3.3-70b",
         ##"gemma-2b",
-        "gemma-7b",
+        #"gemma-7b",
         ##"gemma1.1-2b",
         ##"gemma1.1-7b",
         ##"gemma2-2b",
@@ -63,19 +63,21 @@ if __name__ == "__main__":
         ##"gemma2-2b_from_llama3-8b--checkpoint-320",
         ##"gemma2-2b_from_qwen2.5-7b--checkpoint-40",
         ##"gemma2-2b_from_qwen2.5-7b--checkpoint-320",
-        "llama3.2-3b_from_gemma-7b--checkpoint-40",
-        "llama3.2-3b_from_gemma-7b--checkpoint-320",
+        #"llama3.2-3b_from_gemma-7b--checkpoint-40",
+        #"llama3.2-3b_from_gemma-7b--checkpoint-320",
         ##"llama3.2-3b_from_qwen2.5-7b--checkpoint-40",
         ##"llama3.2-3b_from_qwen2.5-7b--checkpoint-320",
-        ##"qwen2.5-3b_from_gemma-7b--checkpoint-40",
-        ##"qwen2.5-3b_from_gemma-7b--checkpoint-320",
+        #"qwen2.5-3b_from_gemma-7b--checkpoint-40",
+        #"qwen2.5-3b_from_gemma-7b--checkpoint-320",
         ##"qwen2.5-3b_from_llama3-8b--checkpoint-40",
         ##"qwen2.5-3b_from_llama3-8b--checkpoint-320",
     ]
     jailbreak_datasets = [
         "GCG-meta-llama--Llama-3.2-3B-Instruct",
-        "GCG-scratch--jb9146--git--stanford_alpaca--outputs--distillations--llama3.2-3b_from_gemma-7b--checkpoint-40-----meta-llama--Llama-3.2-3B-Instruct",
-        "GCG-scratch--jb9146--git--stanford_alpaca--outputs--distillations--llama3.2-3b_from_gemma-7b--checkpoint-320-----meta-llama--Llama-3.2-3B-Instruct",
+        #"GCG-scratch--jb9146--git--stanford_alpaca--outputs--distillations--llama3.2-3b_from_gemma-7b--checkpoint-40-----meta-llama--Llama-3.2-3B-Instruct",
+        #"GCG-scratch--jb9146--git--stanford_alpaca--outputs--distillations--llama3.2-3b_from_gemma-7b--checkpoint-320-----meta-llama--Llama-3.2-3B-Instruct",
+        #"GCG-scratch--jb9146--git--stanford_alpaca--outputs--distillations--qwen2.5-3b_from_gemma-7b--checkpoint-40-----Qwen--Qwen2.5-3B-Instruct",
+        #"GCG-scratch--jb9146--git--stanford_alpaca--outputs--distillations--qwen2.5-3b_from_gemma-7b--checkpoint-320-----Qwen--Qwen2.5-3B-Instruct",
     ]
     
     base_output_dir = "/scratch/rca9780/jailbreak_analysis_data/response_shards/"
