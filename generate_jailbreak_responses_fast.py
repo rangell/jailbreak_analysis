@@ -43,10 +43,11 @@ if __name__ == '__main__':
         llm = LLM(model=model_name_or_path, dtype=torch.bfloat16)
 
     # generate responses
-    outputs = llm.generate(jailbreaks_dataset["jailbreak_prompt_text"], sampling_params)
+    convos = [[{"role": "user", "content": s}] for s in jailbreaks_dataset["jailbreak_prompt_text"]]
+    outputs = llm.chat(convos, sampling_params)
 
     # dump responses
-    output_fname = f'{args.output_dir}/{args.target_model}-responses-all.json'
+    output_fname = f'{args.output_dir}/{args.target_model}-responses-test.json'
     with open(output_fname, 'w') as f:
         for in_data, output in zip(jailbreaks_dataset, outputs):
             in_data.update({"response": [r.text for r in output.outputs]})
